@@ -1,10 +1,14 @@
 # coding: utf-8
 
+import logging
+
 from twisted.protocols.basic import LineReceiver
 
 from chatd.service import get_storage
 from chatd.service.model import RoomMessage, PrivateMessage, SystemMessage
 from chatd.server.exc import RequestFormatError
+
+log = logging.getLogger(__name__)
 
 class ChatServerProtocol(LineReceiver):
     
@@ -18,6 +22,8 @@ class ChatServerProtocol(LineReceiver):
         self.transport.loseConnection()
     
     def lineReceived(self, line):
+        log.debug("Received line: " + line)
+        
         operation, request = line.split(' ', 1)
         try:
             method = self._dispatchMethod(operation)
@@ -30,6 +36,7 @@ class ChatServerProtocol(LineReceiver):
         try:
             PutOperationProcessor().process(request)
         except RequestFormatError, e:
+            log.error("Error parsing request: " + request, exc_info=True)
             self.errorResponse('error ' + e.message)
         else:
             self.sendLine('added')
@@ -44,6 +51,7 @@ class ChatServerProtocol(LineReceiver):
         elif operation == 'get':
             return self.callGet
         else:
+            log.error("Unsupported operation '%s'." % operation)
             raise ValueError("Unsupported operation '%s'" % operation)
 
 class PutOperationProcessor(object):
@@ -51,6 +59,8 @@ class PutOperationProcessor(object):
     AVAILABE_TYPES = ('room', 'private', 'system')
     
     def process(self, line):
+        log.debug("Invoking PUT operation.")
+        
         type, meta, text = line.split(' ', 2)
         if type in self.AVAILABE_TYPES:
             method = getattr(self, 'add%sMessage' % type.capitalize())
@@ -104,8 +114,11 @@ class GetOperationProcessor(object):
                    ])
     
     def process(self, line):
+        log.debug("Invoking GET operation.")
+        
         flags, username, room_id, lmi, lpi, lsi = line.split(' ')
-        data, messages = get_storage().get_messages(flags, username, room_id, lmi, lpi, lsi)
+        data, messages = get_storage().get_messages(
+                                       flags, username, room_id, lmi, lpi, lsi)
         return chain([self._compile_meta(data)], messages)
     
     def _compile_meta(self, data):

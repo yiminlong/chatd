@@ -17,7 +17,6 @@ class ShiftedList(object):
         del self._items[index-self._shift]
     
     def __getitem__(self, index):
-        # XXX what if index is negative?
         return self._items[index-self._shift]
     
     def count(self):

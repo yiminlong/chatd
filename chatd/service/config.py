@@ -26,7 +26,6 @@ class Settings(object):
             raise Exception("Module '%s' can not be imported", e)
         
         try:
-            print dir(module)
             storage = getattr(module, 'Storage')
         except AttributeError:
             raise Exception("Module '%s' does not contain 'Storage' class")

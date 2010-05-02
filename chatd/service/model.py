@@ -9,6 +9,9 @@ class _Message(object):
     
     def __init__(self):
         self.time = datetime.now()
+    
+    def __str__(self):
+        return self.text
 
 class RoomMessage(_Message):
     """ Simple user chat message. """
