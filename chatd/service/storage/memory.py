@@ -1,8 +1,11 @@
 # coding: utf-8
 
-from ..flag import *
-from . import abstract
-from .utils import ShiftedList
+from chatd.service.flag import *
+from chatd.service.storage import abstract
+from chatd.service.storage.utils import ShiftedList
+
+import logging
+log = logging.getLogger(__name__)
 
 class Storage(abstract.Storage):
     
@@ -26,7 +29,7 @@ class Storage(abstract.Storage):
         lmi, lpi, lsi = self._verify_indexes(lmi, lpi, lsi)
         
         return_messages.extend(
-                         self._get_room_message(flags, username, room_id, lmi))
+                         self._get_room_messages(flags, username, room_id, lmi))
         return_messages.extend(self._get_private_messages(username, lpi))
         return_messages.extend(
                       self._get_system_messages(flags, username, room_id, lsi))

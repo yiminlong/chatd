@@ -2,9 +2,9 @@
 
 from twisted.protocols.basic import LineReceiver
 
-from service import get_storage
-from service.model import RoomMessage, PrivateMessage, SystemMessage
-from .exc import RequestFormatError
+from chatd.service import get_storage
+from chatd.service.model import RoomMessage, PrivateMessage, SystemMessage
+from chatd.server.exc import RequestFormatError
 
 class ChatServerProtocol(LineReceiver):
     
@@ -54,7 +54,7 @@ class PutOperationProcessor(object):
         type, meta, text = line.split(' ', 2)
         if type in self.AVAILABE_TYPES:
             method = getattr(self, 'add%sMessage' % type.capitalize())
-            method(*meta.split(':'), text)
+            method(*chain(meta.split(':'), [text]))
     
     def addRoomMessage(self, username, room_id, receivers, source_text):
         """ Format::
@@ -104,7 +104,8 @@ class GetOperationProcessor(object):
                    ])
     
     def process(self, line):
-        data, messages = get_storage().get_messages()
+        flags, username, room_id, lmi, lpi, lsi = line.split(' ')
+        data, messages = get_storage().get_messages(flags, username, room_id, lmi, lpi, lsi)
         return chain([self._compile_meta(data)], messages)
     
     def _compile_meta(self, data):
