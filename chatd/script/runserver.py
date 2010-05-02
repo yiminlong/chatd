@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from optparse import OptionParser
 
 import sys
@@ -26,7 +28,7 @@ def append_paths():
 def execute():
     options, args = parser.parse_args()
     
-    from service.config import Settings
+    from chatd.service.config import Settings
     settings = Settings()
     settings.set_verbose(options.verbose)
     settings.set_storage(options.storage)
